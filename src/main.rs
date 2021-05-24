@@ -7,7 +7,7 @@ use iced::{
     executor, time,
     window::Settings as WindowSettings,
     Application, Color, Column, Command, Container, Element, Length, Point, Rectangle, Row,
-    Settings, Subscription,
+    Settings, Subscription, Vector,
 };
 use iced_native::event::Event;
 use iced_native::keyboard::Event as KeyboardEvent;
@@ -104,13 +104,9 @@ impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let clock = self.clock.draw(bounds.size(), |frame| {
             let center = frame.center();
-            let radius = frame.width().min(frame.height()) / 2.0;
-
-            let background = Path::circle(center, radius);
-            frame.fill(&background, Color::WHITE);
 
             let color = Color::from_rgb8(0xc2, 0x23, 0x30);
-            // frame.translate(Vector::new(center.x, center.y));
+            frame.translate(Vector::new(center.x, center.y));
 
             let stroke = Stroke {
                 width: 5f32,
@@ -119,9 +115,13 @@ impl canvas::Program<Message> for Visualizer {
                 ..Stroke::default()
             };
 
-            let bar = Path::line(Point::new(10f32, 10f32), Point::new(100f32, 100f32));
+            let bar = Path::line(Point::new(0f32, 0f32), Point::new(400f32, 200f32));
+            let bar2 = Path::line(Point::new(0f32, 0f32), Point::new(20f32, 20f32));
 
-            frame.with_save(|frame| frame.stroke(&bar, stroke))
+            frame.with_save(|frame| {
+                frame.stroke(&bar2, stroke);
+                frame.stroke(&bar, stroke);
+            })
         });
 
         vec![clock]
