@@ -3,19 +3,19 @@ use chrono::Timelike;
 use std::process;
 
 use iced::{
-    canvas::{self, Cache, Cursor, Geometry, Path},
+    canvas::{self, Cache, Canvas, Cursor, Geometry, LineCap, Path, Stroke},
     executor, time,
     window::Settings as WindowSettings,
-    Application, Color, Column, Command, Element, Length, Rectangle, Row, Settings, Space,
-    Subscription, Vector,
+    Application, Color, Column, Command, Container, Element, Length, Point, Rectangle, Row,
+    Settings, Subscription,
 };
 use iced_native::event::Event;
 use iced_native::keyboard::Event as KeyboardEvent;
 
 pub fn main() -> iced::Result {
-    Sorter::run(Settings {
+    Visualizer::run(Settings {
         window: WindowSettings {
-            size: (400, 200),
+            size: (400, 400),
             ..WindowSettings::default()
         },
         antialiasing: true,
@@ -23,8 +23,8 @@ pub fn main() -> iced::Result {
     })
 }
 
-struct Sorter {
-    data: u32,
+struct Visualizer {
+    data: Box<[u32]>,
     clock: Cache,
 }
 
@@ -34,15 +34,15 @@ enum Message {
     EventOccured(iced_native::Event),
 }
 
-impl Application for Sorter {
+impl Application for Visualizer {
     type Executor = executor::Default;
     type Message = Message;
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (
-            Sorter {
-                data: 0,
+            Visualizer {
+                data: Box::new([1, 7, 4, 3, 2, 9, 5]),
                 clock: Default::default(),
             },
             Command::none(),
@@ -57,6 +57,7 @@ impl Application for Sorter {
         match message {
             Message::Tick(local_time) => {
                 let _now = local_time;
+                self.clock.clear();
             }
             Message::EventOccured(event) => {
                 if let Event::Keyboard(keyboard_event) = event {
@@ -84,25 +85,43 @@ impl Application for Sorter {
     }
 
     fn view(&mut self) -> Element<Message> {
-        let row = Row::new()
-            .push(Space::new(Length::Units(50), Length::Shrink))
-            .width(Length::Fill);
-        Column::new().padding(20).push(row).into()
+        let canvas = Container::new(
+            Canvas::new(self)
+                .width(Length::Units(100))
+                .height(Length::Units(100)),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .padding(5)
+        .center_y();
+
+        let row = Row::new().push(canvas).width(Length::Fill);
+        Column::new().push(row).into()
     }
 }
 
-impl canvas::Program<Message> for Sorter {
+impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let clock = self.clock.draw(bounds.size(), |frame| {
             let center = frame.center();
             let radius = frame.width().min(frame.height()) / 2.0;
 
-            let color = Color::from_rgb8(0xc2, 0x23, 0x30);
-
             let background = Path::circle(center, radius);
-            frame.fill(&background, color);
+            frame.fill(&background, Color::WHITE);
 
-            frame.translate(Vector::new(center.x, center.y));
+            let color = Color::from_rgb8(0xc2, 0x23, 0x30);
+            // frame.translate(Vector::new(center.x, center.y));
+
+            let stroke = Stroke {
+                width: 5f32,
+                color,
+                line_cap: LineCap::Round,
+                ..Stroke::default()
+            };
+
+            let bar = Path::line(Point::new(10f32, 10f32), Point::new(100f32, 100f32));
+
+            frame.with_save(|frame| frame.stroke(&bar, stroke))
         });
 
         vec![clock]
