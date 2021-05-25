@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use chrono::Timelike;
 
 use std::process;
@@ -7,15 +8,18 @@ use iced::{
     executor, time,
     window::Settings as WindowSettings,
     Application, Color, Column, Command, Container, Element, Length, Point, Rectangle, Row,
-    Settings, Subscription, Vector,
+    Settings, Subscription,
 };
 use iced_native::event::Event;
 use iced_native::keyboard::Event as KeyboardEvent;
 
+const WIDTH: u32 = 400;
+const HEIGHT: u32 = 400;
+
 pub fn main() -> iced::Result {
     Visualizer::run(Settings {
         window: WindowSettings {
-            size: (400, 400),
+            size: (WIDTH, HEIGHT),
             ..WindowSettings::default()
         },
         antialiasing: true,
@@ -87,8 +91,8 @@ impl Application for Visualizer {
     fn view(&mut self) -> Element<Message> {
         let canvas = Container::new(
             Canvas::new(self)
-                .width(Length::Units(100))
-                .height(Length::Units(100)),
+                .width(Length::Units(WIDTH as u16))
+                .height(Length::Units(HEIGHT as u16)),
         )
         .width(Length::Fill)
         .height(Length::Fill)
@@ -102,28 +106,35 @@ impl Application for Visualizer {
 
 impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
-        let clock = self.clock.draw(bounds.size(), |frame| {
-            let center = frame.center();
-
-            let color = Color::from_rgb8(0xc2, 0x23, 0x30);
-            frame.translate(Vector::new(center.x, center.y));
-
-            let stroke = Stroke {
-                width: 5f32,
-                color,
-                line_cap: LineCap::Round,
-                ..Stroke::default()
-            };
-
-            let bar = Path::line(Point::new(0f32, 0f32), Point::new(400f32, 200f32));
-            let bar2 = Path::line(Point::new(0f32, 0f32), Point::new(20f32, 20f32));
-
-            frame.with_save(|frame| {
-                frame.stroke(&bar2, stroke);
-                frame.stroke(&bar, stroke);
-            })
+        let program = self.clock.draw(bounds.size(), |frame| {
+            let mut shift: f32 = 20f32;
+            for data_point in self.data.into_iter() {
+                let line = Path::line(
+                    Point::new(shift, 0f32),
+                    Point::new(shift, (data_point.clone() * 10) as f32),
+                );
+                frame.stroke(&line, stroke_setup("red", 3f32));
+                shift += 20f32;
+            }
         });
 
-        vec![clock]
+        vec![program]
     }
 }
+
+// utils {{{
+fn stroke_setup(color: &str, width: f32) -> Stroke {
+    let color = match color {
+        "red" => Color::from_rgb8(0xc2, 0x23, 0x30),
+        "blue" => Color::from_rgb8(0x12, 0x13, 0xc0),
+        "green" => Color::from_rgb8(0x12, 0xf3, 0x10),
+        _ => Color::BLACK,
+    };
+    Stroke {
+        width,
+        color,
+        line_cap: LineCap::Round,
+        ..Stroke::default()
+    }
+}
+// }}}
