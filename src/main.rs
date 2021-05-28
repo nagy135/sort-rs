@@ -46,7 +46,7 @@ impl Application for Visualizer {
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (
             Visualizer {
-                data: Box::new([1, 7, 4, 3, 2, 9, 5]),
+                data: Box::new([15, 22, 25, 1, 7, 33, 4, 3, 22, 2, 15, 18, 19, 9, 5]),
                 clock: Default::default(),
             },
             Command::none(),
@@ -107,14 +107,15 @@ impl Application for Visualizer {
 impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let program = self.clock.draw(bounds.size(), |frame| {
-            let mut shift: f32 = 20f32;
+            let shift: f32 = WIDTH as f32 / self.data.len() as f32;
+            let mut position = 0f32;
             for data_point in self.data.into_iter() {
                 let line = Path::line(
-                    Point::new(shift, 0f32),
-                    Point::new(shift, (data_point.clone() * 10) as f32),
+                    Point::new(position, 0f32),
+                    Point::new(position, (data_point.clone() * 10) as f32),
                 );
                 frame.stroke(&line, stroke_setup("red", 3f32));
-                shift += 20f32;
+                position += shift
             }
         });
 
