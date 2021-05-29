@@ -10,7 +10,7 @@ use iced::{
     executor, time,
     window::Settings as WindowSettings,
     Application, Color, Column, Command, Container, Element, Length, Point, Rectangle, Row,
-    Settings, Subscription,
+    Settings, Size, Subscription,
 };
 use iced_native::event::Event;
 use iced_native::keyboard::Event as KeyboardEvent;
@@ -115,19 +115,18 @@ impl Visualizer {
         self.sorter.tick(&mut self.data);
     }
 }
-
 impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let program = self.clock.draw(bounds.size(), |frame| {
             let shift: f32 = (WIDTH as f32 - BAR_WIDTH / 2f32) / self.data.len() as f32;
-            let mut position = BAR_WIDTH;
+            let mut position = 0f32;
             for data_point in self.data.iter() {
-                let line = Path::line(
+                let line = Path::rectangle(
                     Point::new(position, 0f32),
-                    Point::new(position, (data_point.clone() * 10) as f32),
+                    Size::new(WIDTH as f32 / self.data.len() as f32, *data_point as f32),
                 );
-                frame.stroke(&line, stroke_setup("red", BAR_WIDTH));
-                position += shift
+                frame.stroke(&line, stroke_setup("red", 3f32));
+                position += WIDTH as f32 / self.data.len() as f32;
             }
         });
 
