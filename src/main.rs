@@ -3,6 +3,8 @@ use chrono::Timelike;
 
 use std::process;
 
+mod sorters;
+
 use iced::{
     canvas::{self, Cache, Canvas, Cursor, Geometry, LineCap, Path, Stroke},
     executor, time,
@@ -28,7 +30,7 @@ pub fn main() -> iced::Result {
 }
 
 struct Visualizer {
-    data: Box<[u32]>,
+    data: Vec<u32>,
     clock: Cache,
 }
 
@@ -46,7 +48,7 @@ impl Application for Visualizer {
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (
             Visualizer {
-                data: Box::new([15, 22, 25, 1, 7, 33, 4, 3, 22, 2, 15, 18, 19, 9, 5]),
+                data: vec![15, 22, 25, 1, 7, 33, 4, 3, 22, 2, 15, 18, 19, 9, 5],
                 clock: Default::default(),
             },
             Command::none(),
@@ -61,6 +63,7 @@ impl Application for Visualizer {
         match message {
             Message::Tick(local_time) => {
                 let _now = local_time;
+                self.update_data();
                 self.clock.clear();
             }
             Message::EventOccured(event) => {
@@ -104,12 +107,18 @@ impl Application for Visualizer {
     }
 }
 
+impl Visualizer {
+    fn update_data(&mut self) {
+        sorters::BubbleSort::tick(&mut self.data);
+    }
+}
+
 impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let program = self.clock.draw(bounds.size(), |frame| {
             let shift: f32 = WIDTH as f32 / self.data.len() as f32;
             let mut position = 0f32;
-            for data_point in self.data.into_iter() {
+            for data_point in self.data.iter() {
                 let line = Path::line(
                     Point::new(position, 0f32),
                     Point::new(position, (data_point.clone() * 10) as f32),
