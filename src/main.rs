@@ -31,6 +31,7 @@ pub fn main() -> iced::Result {
 
 struct Visualizer {
     data: Vec<u32>,
+    sorter: sorters::BubbleSort,
     clock: Cache,
 }
 
@@ -49,6 +50,7 @@ impl Application for Visualizer {
         (
             Visualizer {
                 data: vec![15, 22, 25, 1, 7, 33, 4, 3, 22, 2, 15, 18, 19, 9, 5],
+                sorter: sorters::BubbleSort::new(),
                 clock: Default::default(),
             },
             Command::none(),
@@ -109,7 +111,7 @@ impl Application for Visualizer {
 
 impl Visualizer {
     fn update_data(&mut self) {
-        sorters::BubbleSort::tick(&mut self.data);
+        self.sorter.tick(&mut self.data);
     }
 }
 
