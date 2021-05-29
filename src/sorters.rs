@@ -7,16 +7,17 @@ impl BubbleSort {
         BubbleSort { index: 0 }
     }
     pub fn tick(&mut self, data: &mut Vec<u32>) {
+        println!("{}", self.index);
+
         let temp = data[self.index + 1];
         data[self.index + 1] = data[self.index];
         data[self.index] = temp;
 
         self.index += 1;
-        self.index = self.index % 13;
+        if self.index >= data.len() - 1 {
+            self.index = 0;
+        }
 
-        println!("{:?}", data);
-        // data[5] += 1;
-        // data[2] += 8;
-        // data[1] += 22;
+        // println!("{:?}", data);
     }
 }
