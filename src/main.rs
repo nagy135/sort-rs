@@ -6,7 +6,7 @@ use std::process;
 mod sorters;
 
 use iced::{
-    canvas::{self, Cache, Canvas, Cursor, Geometry, LineCap, Path, Stroke},
+    canvas::{self, Cache, Canvas, Cursor, Geometry},
     executor, time,
     window::Settings as WindowSettings,
     Application, Color, Column, Command, Container, Element, Length, Point, Rectangle, Row,
@@ -120,33 +120,18 @@ impl canvas::Program<Message> for Visualizer {
         let program = self.clock.draw(bounds.size(), |frame| {
             let shift: f32 = (WIDTH as f32 - BAR_WIDTH / 2f32) / self.data.len() as f32;
             let mut position = 0f32;
+            let max = *self.data.iter().max().unwrap() as f32;
             for data_point in self.data.iter() {
-                let line = Path::rectangle(
+                let height = HEIGHT as f32 * (*data_point as f32 / max) as f32;
+                frame.fill_rectangle(
                     Point::new(position, 0f32),
-                    Size::new(WIDTH as f32 / self.data.len() as f32, *data_point as f32),
+                    Size::new(WIDTH as f32 / self.data.len() as f32, height),
+                    Color::BLACK,
                 );
-                frame.stroke(&line, stroke_setup("red", 3f32));
-                position += WIDTH as f32 / self.data.len() as f32;
+                position += shift;
             }
         });
 
         vec![program]
     }
 }
-
-// utils {{{
-fn stroke_setup(color: &str, width: f32) -> Stroke {
-    let color = match color {
-        "red" => Color::from_rgb8(0xc2, 0x23, 0x30),
-        "blue" => Color::from_rgb8(0x12, 0x13, 0xc0),
-        "green" => Color::from_rgb8(0x12, 0xf3, 0x10),
-        _ => Color::BLACK,
-    };
-    Stroke {
-        width,
-        color,
-        line_cap: LineCap::Round,
-        ..Stroke::default()
-    }
-}
-// }}}
