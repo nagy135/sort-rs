@@ -1,15 +1,22 @@
-pub struct BubbleSort {
-    index: usize,
-}
+pub struct BubbleSort {}
 
 impl BubbleSort {
     pub fn new() -> BubbleSort {
-        BubbleSort { index: 0 }
+        BubbleSort {}
     }
     pub fn solve(&mut self, data: &Vec<u32>) -> Vec<Vec<u32>> {
-        vec![
-            vec![15, 22, 25, 1, 13, 16, 15, 2, 9, 8, 6, 6, 4, 22, 15, 13],
-            vec![15, 22, 25, 1, 13, 22, 15, 8, 6, 2, 9, 6, 4, 16, 15, 13],
-        ]
+        let mut result: Vec<Vec<u32>> = vec![data.clone()];
+        let mut copy = data.clone();
+        for _ in 0..data.len() - 1 {
+            for i in 0..data.len() - 1 {
+                if copy[i] > copy[i + 1] {
+                    let temp = copy[i];
+                    copy[i] = copy[i + 1];
+                    copy[i + 1] = temp;
+                    result.push(copy.clone());
+                }
+            }
+        }
+        result
     }
 }
