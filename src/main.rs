@@ -31,8 +31,10 @@ pub fn main() -> iced::Result {
 }
 
 struct Visualizer {
-    data: Vec<u32>,
-    sorter: sorters::BubbleSort,
+    slides: Vec<Vec<u32>>,
+    columns: usize,
+    index: usize,
+    max: u32,
     clock: Cache,
 }
 
@@ -48,11 +50,15 @@ impl Application for Visualizer {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
+        let data = vec![15, 22, 25, 1, 13, 16, 15, 2, 9, 8, 6, 6, 4, 22, 15, 13];
+        let mut sorter = sorters::BubbleSort::new();
         (
             Visualizer {
-                data: vec![15, 22, 25, 1],
-                sorter: sorters::BubbleSort::new(),
+                slides: sorter.solve(&data),
                 clock: Default::default(),
+                columns: data.len(),
+                max: *data.iter().max().unwrap(),
+                index: 0,
             },
             Command::none(),
         )
@@ -66,7 +72,7 @@ impl Application for Visualizer {
         match message {
             Message::Tick(local_time) => {
                 let _now = local_time;
-                self.update_data();
+                self.tick();
                 self.clock.clear();
             }
             Message::EventOccured(event) => {
@@ -89,7 +95,7 @@ impl Application for Visualizer {
     fn subscription(&self) -> Subscription<Message> {
         Subscription::batch(vec![
             iced_native::subscription::events().map(Message::EventOccured),
-            time::every(std::time::Duration::from_millis(500))
+            time::every(std::time::Duration::from_millis(100))
                 .map(|_| Message::Tick(chrono::Local::now())),
         ])
     }
@@ -111,21 +117,25 @@ impl Application for Visualizer {
 }
 
 impl Visualizer {
-    fn update_data(&mut self) {
-        self.sorter.tick(&mut self.data);
+    fn tick(&mut self) {
+        self.index = (self.index + 1) % self.slides.len();
     }
 }
 impl canvas::Program<Message> for Visualizer {
     fn draw(&self, bounds: Rectangle, _cursor: Cursor) -> Vec<Geometry> {
         let program = self.clock.draw(bounds.size(), |frame| {
-            let shift: f32 = (WIDTH as f32 - BAR_WIDTH / 2f32) / self.data.len() as f32;
+            frame.fill_rectangle(
+                Point::new(0f32, 0f32),
+                Size::new(WIDTH as f32, HEIGHT as f32),
+                Color::WHITE,
+            );
+            let shift: f32 = (WIDTH as f32 - BAR_WIDTH / 2f32) / self.columns as f32;
             let mut position = 0f32;
-            let max = *self.data.iter().max().unwrap() as f32;
-            for data_point in self.data.iter() {
-                let height = HEIGHT as f32 * (*data_point as f32 / max) as f32;
+            for data_point in self.slides[self.index].iter() {
+                let height = HEIGHT as f32 * (*data_point as f32 / self.max as f32) as f32;
                 frame.fill_rectangle(
-                    Point::new(position, 0f32),
-                    Size::new(WIDTH as f32 / self.data.len() as f32, height),
+                    Point::new(position, HEIGHT as f32),
+                    Size::new(WIDTH as f32 / self.columns as f32, -height),
                     Color::BLACK,
                 );
                 position += shift;
