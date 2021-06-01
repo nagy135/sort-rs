@@ -18,8 +18,9 @@ use iced_native::keyboard::Event as KeyboardEvent;
 const WIDTH: u32 = 400;
 const HEIGHT: u32 = 400;
 const BAR_WIDTH: f32 = 20f32;
+const DONE_DELAY: i64 = 3;
 
-const DATA_SIZE: usize = 50;
+const DATA_SIZE: usize = 20;
 
 pub fn main() -> iced::Result {
     Visualizer::run(Settings {
@@ -38,6 +39,7 @@ struct Visualizer {
     index: usize,
     max: u32,
     clock: Cache,
+    done: i64,
 }
 
 #[derive(Debug, Clone)]
@@ -60,6 +62,7 @@ impl Application for Visualizer {
                 clock: Default::default(),
                 columns: data.len(),
                 max: *data.iter().max().unwrap(),
+                done: 0,
                 index: 0,
             },
             Command::none(),
@@ -120,7 +123,17 @@ impl Application for Visualizer {
 
 impl Visualizer {
     fn tick(&mut self) {
-        self.index = (self.index + 1) % self.slides.len();
+        if self.index == self.slides.len() - 1 {
+            let now = Utc::now().timestamp();
+            if self.done == 0 {
+                self.done = now;
+            } else if (now - self.done) >= DONE_DELAY {
+                self.index = 0;
+                self.done = 0;
+            }
+        } else {
+            self.index = (self.index + 1) % self.slides.len();
+        }
     }
 }
 impl canvas::Program<Message> for Visualizer {
