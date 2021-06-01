@@ -55,10 +55,9 @@ impl Application for Visualizer {
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
         let data = generate_random_array(DATA_SIZE);
-        let mut sorter = sorters::BubbleSort::new();
         (
             Visualizer {
-                slides: sorter.solve(&data),
+                slides: sorters::Sorters::bubble_sort(&data),
                 clock: Default::default(),
                 columns: data.len(),
                 max: *data.iter().max().unwrap(),

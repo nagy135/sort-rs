@@ -1,10 +1,7 @@
-pub struct BubbleSort {}
+pub struct Sorters {}
 
-impl BubbleSort {
-    pub fn new() -> BubbleSort {
-        BubbleSort {}
-    }
-    pub fn solve(&mut self, data: &Vec<u32>) -> Vec<Vec<u32>> {
+impl Sorters {
+    pub fn bubble_sort(data: &Vec<u32>) -> Vec<Vec<u32>> {
         let mut result: Vec<Vec<u32>> = vec![data.clone()];
         let mut copy = data.clone();
         for _ in 0..data.len() - 1 {
