@@ -1,6 +1,9 @@
 pub struct BubbleSort {}
 
 impl BubbleSort {
+    pub fn new() -> BubbleSort {
+        BubbleSort {}
+    }
     pub fn solve(&mut self, data: &Vec<u32>) -> Vec<Vec<u32>> {
         let mut result: Vec<Vec<u32>> = vec![data.clone()];
         let mut copy = data.clone();
@@ -15,12 +18,6 @@ impl BubbleSort {
             }
         }
         result
-    }
-}
-
-impl BubbleSort {
-    pub fn new() -> BubbleSort {
-        BubbleSort {}
     }
 }
 
