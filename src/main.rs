@@ -1,6 +1,5 @@
 #[allow(unused_imports)]
-use chrono::Timelike;
-use rand::prelude::*;
+use chrono::{offset::Utc, DateTime, Timelike};
 
 use std::process;
 
