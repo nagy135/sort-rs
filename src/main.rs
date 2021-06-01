@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use chrono::Timelike;
+use rand::prelude::*;
 
 use std::process;
 
@@ -18,6 +19,8 @@ use iced_native::keyboard::Event as KeyboardEvent;
 const WIDTH: u32 = 400;
 const HEIGHT: u32 = 400;
 const BAR_WIDTH: f32 = 20f32;
+
+const DATA_SIZE: usize = 50;
 
 pub fn main() -> iced::Result {
     Visualizer::run(Settings {
@@ -50,7 +53,7 @@ impl Application for Visualizer {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        let data = vec![15, 22, 25, 1, 13, 16, 15, 2, 9, 8, 6, 6, 4, 22, 15, 13];
+        let data = generate_random_array(DATA_SIZE);
         let mut sorter = sorters::BubbleSort::new();
         (
             Visualizer {
@@ -95,7 +98,7 @@ impl Application for Visualizer {
     fn subscription(&self) -> Subscription<Message> {
         Subscription::batch(vec![
             iced_native::subscription::events().map(Message::EventOccured),
-            time::every(std::time::Duration::from_millis(100))
+            time::every(std::time::Duration::from_millis(30))
                 .map(|_| Message::Tick(chrono::Local::now())),
         ])
     }
@@ -144,4 +147,12 @@ impl canvas::Program<Message> for Visualizer {
 
         vec![program]
     }
+}
+
+fn generate_random_array(size: usize) -> Vec<u32> {
+    let mut result: Vec<u32> = Vec::with_capacity(size);
+    for _ in 0..result.capacity() {
+        result.push(rand::random());
+    }
+    result
 }
