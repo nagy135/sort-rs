@@ -20,7 +20,7 @@ const HEIGHT: u32 = 400;
 const BAR_WIDTH: f32 = 20f32;
 const DONE_DELAY: i64 = 3;
 
-const DATA_SIZE: usize = 20;
+const DATA_SIZE: usize = 40;
 
 pub fn main() -> iced::Result {
     Visualizer::run(Settings {
@@ -145,6 +145,7 @@ impl canvas::Program<Message> for Visualizer {
             );
             let shift: f32 = (WIDTH as f32 - BAR_WIDTH / 2f32) / self.columns as f32;
             let mut position = 0f32;
+            frame.fill_text(format!("Frame {}/{}", self.index + 1, self.slides.len()));
             for data_point in self.slides[self.index].iter() {
                 let height = HEIGHT as f32 * (*data_point as f32 / self.max as f32) as f32;
                 frame.fill_rectangle(
